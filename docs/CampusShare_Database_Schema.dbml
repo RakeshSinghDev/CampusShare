@@ -1,0 +1,77 @@
+// CampusShare — Logical MongoDB Schema
+// MongoDB uses ObjectId references rather than SQL PK/FK constraints.
+
+Table users {
+  _id objectId [pk]
+  name string
+  email string
+  university string
+  profileImage string
+  firebaseUid string
+  isVerified boolean
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table categories {
+  _id objectId [pk]
+  name string
+  slug string
+  description string
+  icon string
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table listings {
+  _id objectId [pk]
+  seller objectId [ref: > users._id]
+  category objectId [ref: > categories._id]
+  title string
+  description string
+  condition string
+  listingType string // sale or rent
+  price number
+  discountedPrice number
+  negotiable boolean
+  rentalPricingUnit string
+  images string[]
+  location string
+  status string
+  views number
+  likes number
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table wishlists {
+  _id objectId [pk]
+  user objectId [ref: > users._id]
+  listing objectId [ref: > listings._id]
+  createdAt datetime
+}
+
+Table conversations {
+  _id objectId [pk]
+  participants objectId[]
+  listing objectId [ref: > listings._id]
+  lastMessage objectId [ref: > messages._id]
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table messages {
+  _id objectId [pk]
+  conversation objectId [ref: > conversations._id]
+  sender objectId [ref: > users._id]
+  text string
+  timestamp datetime
+  isRead boolean
+  createdAt datetime
+}
+
+Ref: wishlists.user > users._id
+Ref: wishlists.listing > listings._id
+Ref: conversations.listing > listings._id
+Ref: messages.conversation > conversations._id
+Ref: messages.sender > users._id
