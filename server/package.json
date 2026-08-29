@@ -1,0 +1,39 @@
+{
+  "name": "campusshare-server",
+  "version": "1.0.0",
+  "description": "CampusShare Verified Student Marketplace Node.js/Express Backend API",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "seed:categories": "node src/database/seedCategories.js"
+  },
+  "keywords": [
+    "campusshare",
+    "express",
+    "mongodb",
+    "mongoose",
+    "marketplace"
+  ],
+  "author": "CampusShare Team",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "firebase-admin": "^14.3.0",
+    "google-auth-library": "^11.0.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.1",
+    "multer": "^2.3.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.3"
+  }
+}

@@ -1,0 +1,238 @@
+/**
+ * Mock dataset for CampusShare Home Screen.
+ * Single source of truth for fallback & demo user representations (INR / Indian Rupee pricing).
+ */
+
+export const currentUser = {
+  name: 'Rakesh Singh',
+  university: 'Kurukshetra University',
+  college: 'Kurukshetra University',
+  major: 'Computer Science \'25',
+  course: 'Computer Science',
+  academicYear: 'Final Year (2025)',
+  campus: 'Main Campus',
+  isVerified: true,
+  avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+  unreadNotifications: 2,
+};
+
+export const quickActions = [
+  {
+    id: 'buy',
+    label: 'Buy',
+    iconName: 'ShoppingBag',
+    path: '/search?type=buy',
+    color: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100/80',
+    description: 'Buy textbooks & gear',
+  },
+  {
+    id: 'sell',
+    label: 'Sell',
+    iconName: 'PlusCircle',
+    path: '/sell',
+    color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100/80',
+    description: 'List your items',
+  },
+  {
+    id: 'rent',
+    label: 'Rent',
+    iconName: 'Clock',
+    path: '/search?type=rent',
+    color: 'bg-purple-50 text-purple-600 border-purple-100 hover:bg-purple-100/80',
+    description: 'Short-term rentals',
+  },
+  {
+    id: 'wishlist',
+    label: 'Wishlist',
+    iconName: 'Heart',
+    path: '/wishlist',
+    color: 'bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100/80',
+    description: 'Saved items',
+  },
+];
+
+export const homeCategories = [
+  { id: 'books', name: 'Books', iconName: 'BookOpen', count: 142, badge: 'Hot' },
+  { id: 'calculators', name: 'Scientific Calculator', iconName: 'Calculator', count: 48, badge: 'Popular' },
+  { id: 'lab-coats', name: 'Lab Coat', iconName: 'FlaskConical', count: 36, badge: 'Essential' },
+  { id: 'electronics', name: 'Electronics', iconName: 'Laptop', count: 89 },
+  { id: 'notes', name: 'Study Notes', iconName: 'FileText', count: 215, badge: 'Verified' },
+  { id: 'stationery', name: 'Stationery', iconName: 'PenTool', count: 62 },
+  { id: 'equipment', name: 'Lab Equipment', iconName: 'Microscope', count: 29 },
+  { id: 'bundles', name: 'Semester Bundles', iconName: 'Layers', count: 18, badge: 'Save ₹' },
+];
+
+export const promoBanners = [
+  {
+    id: 'banner-1',
+    title: 'Save up to 70% by Renting Textbooks & Lab Gear',
+    subtitle: 'Rent for a semester or exam cycle directly from verified peers on campus.',
+    ctaText: 'Explore Rentals',
+    ctaLink: '/search?type=rent',
+    badgeText: 'Campus Rental Guarantee',
+  },
+];
+
+export const recommendedProducts = [
+  {
+    id: 'rec-1',
+    title: 'Organic Chemistry (9th Ed) — Wade & Simek',
+    category: 'Books',
+    condition: 'Like New',
+    buyPrice: 450,
+    rentPrice: 80,
+    rentPeriod: 'week',
+    listingType: 'both',
+    status: 'available',
+    location: 'Kurukshetra University Main Campus',
+    imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'Rohit Verma',
+      isVerified: true,
+      major: 'BioChem \'26',
+    },
+    isWishlisted: false,
+  },
+  {
+    id: 'rec-2',
+    title: 'TI-84 Plus CE Graphing Calculator (Color Screen)',
+    category: 'Scientific Calculator',
+    condition: 'Like New',
+    buyPrice: 850,
+    rentPrice: 120,
+    rentPeriod: 'week',
+    listingType: 'both',
+    status: 'available',
+    location: 'Kurukshetra University CS Dept',
+    imageUrl: 'https://images.unsplash.com/photo-1594980596870-8aa52a78d8cd?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'Maya Chen',
+      isVerified: true,
+      major: 'CS \'25',
+    },
+    isWishlisted: true,
+  },
+  {
+    id: 'rec-3',
+    title: 'White Chemistry Lab Coat (Size M) + Safety Goggles',
+    category: 'Lab Coat',
+    condition: 'Good Condition',
+    buyPrice: 300,
+    rentPrice: 50,
+    rentPeriod: 'week',
+    listingType: 'both',
+    status: 'available',
+    location: 'Chemistry Annex',
+    imageUrl: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'David Kim',
+      isVerified: true,
+      major: 'Pre-Med \'27',
+    },
+    isWishlisted: false,
+  },
+  {
+    id: 'rec-4',
+    title: 'Fundamentals of Physics (11th Ed) — Halliday & Resnick',
+    category: 'Books',
+    condition: 'Good Condition',
+    buyPrice: 550,
+    rentPrice: 90,
+    rentPeriod: 'week',
+    listingType: 'both',
+    status: 'available',
+    location: 'Physics Block',
+    imageUrl: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'Priya Sharma',
+      isVerified: true,
+      major: 'Physics \'26',
+    },
+    isWishlisted: false,
+  },
+];
+
+export const semesterBundles = [
+  {
+    id: 'bundle-1',
+    title: 'ECE Semester 5 Complete Course Pack',
+    subtitle: 'Includes Signals & Systems textbook, Breadboard kit, & Logic Analyzer',
+    itemCount: 3,
+    originalPrice: 2800,
+    bundlePrice: 1850,
+    savingsText: 'Save ₹950',
+    imageUrl: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=600&q=80',
+    location: 'Electrical Eng Hall',
+  },
+  {
+    id: 'bundle-2',
+    title: 'Pre-Med Organic Chem Lab & Study Bundle',
+    subtitle: 'Wade 9th Ed textbook, Molecular Model Set, Lab Coat & Safety Goggles',
+    itemCount: 4,
+    originalPrice: 2200,
+    bundlePrice: 1450,
+    savingsText: 'Save ₹750',
+    imageUrl: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80',
+    location: 'BioSci Courtyard',
+  },
+];
+
+export const trendingNearYou = [
+  {
+    id: 'trend-1',
+    title: 'Apple iPad Air 5th Gen (64GB) + Apple Pencil 2',
+    category: 'Electronics',
+    condition: 'Like New',
+    buyPrice: 18500,
+    rentPrice: 1200,
+    rentPeriod: 'month',
+    listingType: 'both',
+    status: 'available',
+    location: 'Kurukshetra University Student Center',
+    imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'Lucas Zhao',
+      isVerified: true,
+      major: 'Design \'25',
+    },
+    viewsCount: '124 views today',
+  },
+  {
+    id: 'trend-2',
+    title: 'Dorm Mini Fridge (3.2 cu ft) with Freezer Compartment',
+    category: 'Equipment',
+    condition: 'Good Condition',
+    buyPrice: 4200,
+    rentPrice: 450,
+    rentPeriod: 'month',
+    listingType: 'both',
+    status: 'available',
+    location: 'Campus Hostel Complex',
+    imageUrl: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'Emma Watson',
+      isVerified: true,
+      major: 'Business \'26',
+    },
+    viewsCount: '89 views today',
+  },
+  {
+    id: 'trend-3',
+    title: 'Prentice Hall Chemistry Molecular Model Kit',
+    category: 'Lab Equipment',
+    condition: 'Like New',
+    buyPrice: 350,
+    rentPrice: 60,
+    rentPeriod: 'week',
+    listingType: 'both',
+    status: 'available',
+    location: 'Science Library',
+    imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=600&q=80',
+    seller: {
+      name: 'Aman Patel',
+      isVerified: true,
+      major: 'ChemEng \'27',
+    },
+    viewsCount: '67 views today',
+  },
+];
