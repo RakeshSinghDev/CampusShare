@@ -1,7 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-// 1. Initialize environment variables BEFORE any application module imports (Flexible NameID Configured)
+// 1. Initialize environment variables BEFORE any application module imports (Dev Fallback Configured)
 dotenv.config({ path: path.resolve(process.cwd(), '.env'), override: true });
 dotenv.config({ path: path.resolve(__dirname, '../.env'), override: true });
 dotenv.config({ path: path.resolve(__dirname, '../../.env'), override: true });
