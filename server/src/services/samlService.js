@@ -50,7 +50,7 @@ class SamlService {
       wantAssertionsSigned: Boolean(config.saml.cert && !config.saml.cert.includes('...')),
       wantAuthnResponseSigned: false,
       acceptedClockSkewMs: 60000, // 60s clock skew tolerance
-      identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
+      identifierFormat: null, // Allow PingFederate to return default/unspecified NameID format
       audience: spEntityId,
     };
   }
