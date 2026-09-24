@@ -34,6 +34,7 @@ class SamlController {
     try {
       const relayState = req.query.relayState || req.query.redirect || '';
       const authorizeUrl = await samlService.getAuthorizeUrl(req, relayState);
+      console.log('[SAML SSO] Redirecting browser to PingFederate IdP:', authorizeUrl.split('?')[0]);
       return res.redirect(authorizeUrl);
     } catch (err) {
       console.error('[SAML SSO] Login initiation error:', err.message);
@@ -47,6 +48,7 @@ class SamlController {
    */
   acs = asyncHandler(async (req, res) => {
     const clientUrl = getClientBaseUrl();
+    console.log('[SAML ACS] Incoming ACS POST received from PingFederate.');
 
     try {
       const { profile } = await samlService.validatePostResponse(req.body);
@@ -54,6 +56,8 @@ class SamlController {
       if (!profile) {
         throw new Error('SAML authentication returned an empty profile.');
       }
+
+      console.log('[SAML ACS] Assertion successfully verified. Extracted NameID/Subject:', profile.nameID);
 
       // Extract attributes from SAML Assertion
       const email =
@@ -75,6 +79,8 @@ class SamlController {
         profile.sn ||
         profile['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname'] ||
         '';
+
+      console.log('[SAML ACS] User details extracted:', { email, firstName, lastName });
 
       // Find or auto-provision the student account in database
       const { user, token } = await authService.samlLogin({
@@ -103,11 +109,13 @@ class SamlController {
         }
       }
 
+      console.log('[SAML ACS] Session established. Redirecting to:', targetUrl);
+
       // Append token to URL so client localStorage can immediately sync Bearer token
       const separator = targetUrl.includes('?') ? '&' : '?';
       return res.redirect(`${targetUrl}${separator}token=${encodeURIComponent(token)}&sso=true`);
     } catch (err) {
-      console.error('[SAML SSO] ACS callback processing error:', err.message);
+      console.error('[SAML ACS] ACS callback processing error:', err.message);
       return res.redirect(`${clientUrl}/login?error=${encodeURIComponent(err.message)}`);
     }
   });

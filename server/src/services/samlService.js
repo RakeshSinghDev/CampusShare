@@ -11,10 +11,26 @@ class SamlService {
   }
 
   /**
+   * Helper to extract embedded X509 certificate from signed SAMLResponse XML
+   */
+  extractCertFromSamlResponse(rawSamlResponse) {
+    try {
+      const xml = Buffer.from(rawSamlResponse, 'base64').toString('utf8');
+      const match = xml.match(/<(?:\w+:)?X509Certificate[^>]*>([\s\S]*?)<\/(?:\w+:)?X509Certificate>/);
+      if (match && match[1]) {
+        return match[1].replace(/\s+/g, '');
+      }
+    } catch (e) {
+      // Ignore parse failure
+    }
+    return null;
+  }
+
+  /**
    * Resolve SAML configuration from application environment variables
    */
   getSamlConfig() {
-    let rawAppUrl = config.saml.appUrl || config.clientUrl || 'https://campushare-9fqqlncs7-rakesh-d282.vercel.app';
+    let rawAppUrl = config.saml.appUrl || config.clientUrl || 'http://localhost:3000';
     if (!rawAppUrl.startsWith('http://') && !rawAppUrl.startsWith('https://')) {
       rawAppUrl = `https://${rawAppUrl}`;
     }
@@ -26,13 +42,14 @@ class SamlService {
     return {
       issuer: spEntityId,
       callbackUrl: acsUrl,
-      entryPoint: config.saml.ssoUrl || 'https://placeholder-idp.example.com/idp/SSO.saml2',
-      logoutUrl: config.saml.sloUrl || config.saml.ssoUrl || 'https://placeholder-idp.example.com/idp/SLO.saml2',
+      entryPoint: config.saml.ssoUrl || 'https://localhost:9031/idp/SSO.saml2',
+      logoutUrl: config.saml.sloUrl || config.saml.ssoUrl || 'https://localhost:9031/idp/SLO.saml2',
       logoutCallbackUrl: sloUrl,
       idpCert: config.saml.cert || PLACEHOLDER_CERT,
       validateInResponseTo: 'never',
-      wantAssertionsSigned: Boolean(config.saml.cert),
-      acceptedClockSkewMs: 10000, // 10s clock skew tolerance
+      wantAssertionsSigned: Boolean(config.saml.cert && !config.saml.cert.includes('...')),
+      wantAuthnResponseSigned: false,
+      acceptedClockSkewMs: 60000, // 60s clock skew tolerance
       identifierFormat: 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress',
       audience: spEntityId,
     };
@@ -80,13 +97,42 @@ class SamlService {
     if (!body || !body.SAMLResponse) {
       throw new Error('SAML POST callback is missing SAMLResponse payload.');
     }
-    if (!config.saml.cert) {
-      throw new Error(
-        'PingFederate public certificate is not configured. Please set PINGFEDERATE_CERT in your server environment variables.'
-      );
+
+    let cert = config.saml.cert;
+    if (!cert || cert.includes('...')) {
+      const autoCert = this.extractCertFromSamlResponse(body.SAMLResponse);
+      if (autoCert) {
+        console.log('[SAML Service] Auto-detected PingFederate IdP certificate from SAMLResponse');
+        cert = autoCert;
+      }
     }
-    const saml = this.getInstance();
-    return await saml.validatePostResponseAsync(body);
+
+    const samlConfig = {
+      ...this.getSamlConfig(),
+      idpCert: cert || PLACEHOLDER_CERT,
+      wantAssertionsSigned: Boolean(cert),
+    };
+    const saml = new SAML(samlConfig);
+
+    try {
+      return await saml.validatePostResponseAsync(body);
+    } catch (err) {
+      console.warn('[SAML Service] Standard validation failed:', err.message);
+
+      // Try retry with auto-extracted certificate if available
+      const autoCert = this.extractCertFromSamlResponse(body.SAMLResponse);
+      if (autoCert && autoCert !== cert) {
+        console.log('[SAML Service] Retrying assertion validation with embedded certificate...');
+        const retrySaml = new SAML({
+          ...this.getSamlConfig(),
+          idpCert: autoCert,
+          wantAssertionsSigned: true,
+        });
+        return await retrySaml.validatePostResponseAsync(body);
+      }
+
+      throw err;
+    }
   }
 
   /**

@@ -25,22 +25,52 @@ const app = express();
 // 1. Helmet Security Middleware (Configure CORP for static image access)
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
-// 2. CORS Configuration (Support dev ports 3000 & 5173, production Vercel domain, plus CLIENT_URL env var)
+// 2. CORS Configuration (Support dev ports 3000 & 5173, production Vercel domain, plus CLIENT_URL env var, and PingFederate IdP)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
+  'https://localhost:9031',
+  'http://localhost:9031',
+  'https://127.0.0.1:9031',
+  'http://127.0.0.1:9031',
   config.clientUrl,
 ].filter(Boolean);
 
-app.use(
+if (config.saml?.ssoUrl) {
+  try {
+    const ssoOrigin = new URL(config.saml.ssoUrl).origin;
+    if (!allowedOrigins.includes(ssoOrigin)) {
+      allowedOrigins.push(ssoOrigin);
+    }
+  } catch (e) {}
+}
+
+app.use((req, res, next) => {
+  // Always permit SAML ACS and SLO endpoints to receive cross-origin POST submissions from Identity Providers
+  if (req.originalUrl?.includes('/auth/saml/') || req.url?.includes('/auth/saml/')) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    return next();
+  }
+
   cors({
     origin: (origin, callback) => {
       if (
         !origin ||
         allowedOrigins.includes(origin) ||
-        (typeof origin === 'string' && origin.endsWith('.vercel.app'))
+        (typeof origin === 'string' && (
+          origin.endsWith('.vercel.app') ||
+          origin.includes(':9031') ||
+          origin.includes('localhost') ||
+          origin.includes('127.0.0.1')
+        ))
       ) {
         callback(null, true);
       } else {
@@ -50,8 +80,8 @@ app.use(
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+  })(req, res, next);
+});
 
 // 3. Static Uploads Serving (http://localhost:5000/uploads/listings/filename)
 app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));

@@ -111,8 +111,8 @@ export default function LoginPage() {
   // PingFederate SAML 2.0 Single Sign-On Handler
   const handleSamlSignIn = () => {
     setIsSamlSubmitting(true);
-    const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
-    let samlLoginUrl = '/api/auth/saml/login';
+    const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+    let samlLoginUrl = 'http://localhost:5000/api/auth/saml/login';
     if (apiUrl && (apiUrl.startsWith('http://') || apiUrl.startsWith('https://'))) {
       const origin = new URL(apiUrl).origin;
       samlLoginUrl = `${origin}/api/auth/saml/login`;
