@@ -28,6 +28,15 @@ const isDomainAllowed = (email) => {
   );
 };
 
+const samlSpEntityId = process.env.SAML_SP_ENTITY_ID || process.env.NEXT_PUBLIC_APP_URL || 'https://campushare-9fqqlncs7-rakesh-d282.vercel.app';
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || process.env.CLIENT_URL || 'https://campushare-9fqqlncs7-rakesh-d282.vercel.app';
+const pingfederateSsoUrl = process.env.PINGFEDERATE_SSO_URL || '';
+const pingfederateSloUrl = process.env.PINGFEDERATE_SLO_URL || '';
+let pingfederateCert = process.env.PINGFEDERATE_CERT || '';
+if (pingfederateCert && pingfederateCert.includes('\\n')) {
+  pingfederateCert = pingfederateCert.replace(/\\n/g, '\n');
+}
+
 const config = {
   port: process.env.PORT || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -40,6 +49,14 @@ const config = {
   allowedStudentEmailDomains: allowedStudentEmailDomains,
   isDomainAllowed: isDomainAllowed,
   isProduction: process.env.NODE_ENV === 'production',
+  saml: {
+    spEntityId: samlSpEntityId,
+    appUrl: appUrl,
+    ssoUrl: pingfederateSsoUrl,
+    sloUrl: pingfederateSloUrl,
+    cert: pingfederateCert,
+  },
 };
 
 module.exports = config;
+

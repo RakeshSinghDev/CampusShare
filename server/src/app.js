@@ -13,6 +13,7 @@ const { sendResponse } = require('./utils/response');
 
 // Refactored Architecture Routes
 const authRoutes = require('./routes/authRoutes');
+const samlRoutes = require('./routes/samlRoutes');
 const userRoutes = require('./routes/userRoutes');
 const listingRoutes = require('./routes/listingRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -93,6 +94,10 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 // 7. Mount Module API Routes
+// SAML 2.0 Single Sign-On Routes (Supports PingFederate SP endpoints)
+app.use('/api/auth/saml', samlRoutes);
+app.use('/api/v1/auth/saml', samlRoutes);
+
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/listings', listingRoutes);

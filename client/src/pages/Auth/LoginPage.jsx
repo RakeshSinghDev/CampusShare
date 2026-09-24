@@ -14,7 +14,7 @@ import { FormField } from '@/components/forms/FormField';
 import { Input } from '@/components/ui/input';
 import { PrimaryButton } from '@/components/common/PrimaryButton';
 import { Button } from '@/components/ui/button';
-import { LogIn } from 'lucide-react';
+import { LogIn, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function LoginPage() {
@@ -24,6 +24,7 @@ export default function LoginPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [isSamlSubmitting, setIsSamlSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
 
   const redirectTarget = searchParams.get('redirect') || '/home';
@@ -97,6 +98,32 @@ export default function LoginPage() {
     }
   };
 
+  // Catch any external error redirected from SAML SSO
+  React.useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      const decodedError = decodeURIComponent(errorParam);
+      setServerError(decodedError);
+      toast.error(decodedError);
+    }
+  }, [searchParams]);
+
+  // PingFederate SAML 2.0 Single Sign-On Handler
+  const handleSamlSignIn = () => {
+    setIsSamlSubmitting(true);
+    const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+    let samlLoginUrl = '/api/auth/saml/login';
+    if (apiUrl && (apiUrl.startsWith('http://') || apiUrl.startsWith('https://'))) {
+      const origin = new URL(apiUrl).origin;
+      samlLoginUrl = `${origin}/api/auth/saml/login`;
+    }
+    if (redirectTarget && redirectTarget !== '/home') {
+      const separator = samlLoginUrl.includes('?') ? '&' : '?';
+      samlLoginUrl += `${separator}relayState=${encodeURIComponent(redirectTarget)}`;
+    }
+    window.location.href = samlLoginUrl;
+  };
+
   return (
     <AuthLayout
       title="Welcome Back to CampusShare"
@@ -111,7 +138,7 @@ export default function LoginPage() {
               type="email"
               autoComplete="username"
               placeholder="alex.rivera@stanford.edu"
-              disabled={isSubmitting || isGoogleSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting || isSamlSubmitting}
               {...register('email')}
             />
           </FormField>
@@ -120,7 +147,7 @@ export default function LoginPage() {
             <PasswordInput
               autoComplete="current-password"
               placeholder="••••••••"
-              disabled={isSubmitting || isGoogleSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting || isSamlSubmitting}
               {...register('password')}
             />
           </FormField>
@@ -138,7 +165,7 @@ export default function LoginPage() {
           <PrimaryButton
             type="submit"
             isLoading={isSubmitting}
-            disabled={isSubmitting || isGoogleSubmitting}
+            disabled={isSubmitting || isGoogleSubmitting || isSamlSubmitting}
             className="w-full h-11 text-base rounded-xl mt-2 font-bold"
             leftIcon={LogIn}
           >
@@ -153,12 +180,13 @@ export default function LoginPage() {
             <span className="relative bg-white px-3 text-slate-400 font-medium">Or continue with</span>
           </div>
 
-          {/* Firebase Google Auth Button */}
-          <div className="w-full flex justify-center">
+          {/* Third-Party & University SSO Buttons */}
+          <div className="w-full flex flex-col gap-2.5">
+            {/* Firebase Google Auth Button */}
             <Button
               type="button"
               variant="outline"
-              disabled={isSubmitting || isGoogleSubmitting}
+              disabled={isSubmitting || isGoogleSubmitting || isSamlSubmitting}
               onClick={handleGoogleSignIn}
               className="w-full h-11 rounded-xl text-sm font-semibold gap-3 text-slate-700 bg-white hover:bg-slate-50 border-slate-200 shadow-sm transition-all"
             >
@@ -188,6 +216,27 @@ export default function LoginPage() {
                     />
                   </svg>
                   <span>Continue with Google</span>
+                </>
+              )}
+            </Button>
+
+            {/* University SAML SSO Button */}
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSubmitting || isGoogleSubmitting || isSamlSubmitting}
+              onClick={handleSamlSignIn}
+              className="w-full h-11 rounded-xl text-sm font-semibold gap-3 text-slate-700 bg-white hover:bg-slate-50 border-slate-200 shadow-sm transition-all"
+            >
+              {isSamlSubmitting ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+                  <span>Connecting to University SSO...</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck className="h-5 w-5 text-indigo-600" />
+                  <span>Continue with Campus SSO (SAML)</span>
                 </>
               )}
             </Button>

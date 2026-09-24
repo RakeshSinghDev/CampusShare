@@ -20,6 +20,19 @@ export function AuthProvider({ children }) {
 
     async function initializeAuthSession() {
       try {
+        // Capture SAML SSO token from URL redirection if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const ssoToken = urlParams.get('token') || urlParams.get('sso_token');
+        if (ssoToken) {
+          localStorage.setItem('campusshare_token', ssoToken);
+          urlParams.delete('token');
+          urlParams.delete('sso_token');
+          urlParams.delete('sso');
+          const remainingQuery = urlParams.toString();
+          const cleanUrl = window.location.pathname + (remainingQuery ? `?${remainingQuery}` : '');
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+
         const currentUser = await authService.getCurrentUser();
         if (isMounted) {
           setUser(currentUser);

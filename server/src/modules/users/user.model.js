@@ -30,9 +30,14 @@ const userSchema = new mongoose.Schema(
       sparse: true,
       index: true,
     },
+    samlId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
     authProvider: {
       type: String,
-      enum: ['local', 'google'],
+      enum: ['local', 'google', 'saml'],
       default: 'local',
     },
     avatar: {

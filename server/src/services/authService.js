@@ -152,6 +152,105 @@ class AuthService {
   }
 
   /**
+   * SAML 2.0 Single Sign-On handler (PingFederate)
+   * Finds or auto-provisions user account in MongoDB, generates CampusShare JWT.
+   */
+  async samlLogin({ email, firstName, lastName, nameID, attributes = {} }) {
+    const rawEmail = email || nameID || attributes.email || attributes.mail || attributes.SAML_SUBJECT;
+    if (!rawEmail) {
+      throw new ApiError(400, 'SAML response assertion did not contain a valid email address or subject identifier.', 'SAML_IDENTIFIER_MISSING');
+    }
+
+    const normalizedEmail = rawEmail.toLowerCase().trim();
+    this.validateEmailDomain(normalizedEmail);
+
+    const fullName = [firstName, lastName].filter(Boolean).join(' ').trim() ||
+      attributes.name ||
+      attributes.displayName ||
+      normalizedEmail.split('@')[0];
+
+    const college = attributes.college || attributes.university || attributes.organization || 'Kurukshetra University';
+    const campus = attributes.campus || 'Main Campus';
+
+    // In-memory fallback mode if DB is disconnected
+    if (!this.isDbConnected()) {
+      let memUser = memoryUsers.find(
+        (u) => (nameID && u.samlId === nameID) || (u.email === normalizedEmail)
+      );
+
+      if (memUser) {
+        if (!memUser.samlId && nameID) {
+          memUser.samlId = nameID;
+        }
+        memUser.authProvider = memUser.authProvider || 'saml';
+        memUser.lastLoginAt = new Date().toISOString();
+      } else {
+        memUser = {
+          _id: `mem_user_saml_${Date.now()}`,
+          name: fullName,
+          email: normalizedEmail,
+          samlId: nameID || normalizedEmail,
+          authProvider: 'saml',
+          avatar: '',
+          college: college,
+          campus: campus,
+          isEmailVerified: true,
+          verificationStatus: VERIFICATION_STATUS.VERIFIED,
+          role: USER_ROLES.STUDENT,
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+        };
+        memoryUsers.push(memUser);
+      }
+
+      const token = this.generateToken(memUser);
+      const userObj = { ...memUser };
+      delete userObj.passwordHash;
+      return { user: userObj, token };
+    }
+
+    // MongoDB Database mode
+    let user = await User.findOne({
+      $or: [
+        ...(nameID ? [{ samlId: nameID }] : []),
+        { email: normalizedEmail },
+      ],
+    });
+
+    if (user) {
+      if (nameID && !user.samlId) {
+        user.samlId = nameID;
+      }
+      if (!user.authProvider || user.authProvider === 'local') {
+        user.authProvider = 'saml';
+      }
+      user.isEmailVerified = true;
+      user.verificationStatus = VERIFICATION_STATUS.VERIFIED;
+      user.lastLoginAt = new Date();
+      await user.save();
+    } else {
+      user = await User.create({
+        name: fullName,
+        email: normalizedEmail,
+        samlId: nameID || normalizedEmail,
+        authProvider: 'saml',
+        college: college,
+        campus: campus,
+        isEmailVerified: true,
+        verificationStatus: VERIFICATION_STATUS.VERIFIED,
+        role: USER_ROLES.STUDENT,
+        lastLoginAt: new Date(),
+      });
+    }
+
+    const token = this.generateToken(user);
+    const safeUser = await User.findById(user._id);
+
+    return { user: safeUser, token };
+  }
+
+
+  /**
    * Register a new student account
    */
   async register(userData) {
